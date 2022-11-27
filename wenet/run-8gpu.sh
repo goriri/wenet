@@ -24,6 +24,7 @@ cmvn=true
 do_delta=false
 
 dir=exp/sp_spec_aug
+model_dir=model
 
 # use average_checkpoint will get better result
 average_checkpoint=true
@@ -146,7 +147,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
       --train_data $wave_data/$train_set/data.list \
       --cv_data $wave_data/$dev_set/data.list \
       ${checkpoint:+--checkpoint $checkpoint} \
-      --model_dir $dir \
+      --model_dir $model_dir \
       --ddp.init_method $init_method \
       --ddp.world_size $num_gpus \
       --ddp.rank $i \

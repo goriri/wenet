@@ -7,7 +7,7 @@ echo "torchaudio installed"
 
 # Use this to control how many gpu you use, It's 1-gpu training if you specify
 # just 1gpu, otherwise it's is multiple gpu training based on DDP in pytorch
-export CUDA_VISIBLE_DEVICES="0"
+export CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7"
 stage=4 # start from 0 if you need to start from data preparation
 stop_stage=5
 # data
@@ -24,7 +24,6 @@ cmvn=true
 do_delta=false
 
 dir=exp/sp_spec_aug
-model_dir=model
 
 # use average_checkpoint will get better result
 average_checkpoint=true
@@ -147,7 +146,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
       --train_data $wave_data/$train_set/data.list \
       --cv_data $wave_data/$dev_set/data.list \
       ${checkpoint:+--checkpoint $checkpoint} \
-      --model_dir $model_dir \
+      --model_dir $dir \
       --ddp.init_method $init_method \
       --ddp.world_size $num_gpus \
       --ddp.rank $i \

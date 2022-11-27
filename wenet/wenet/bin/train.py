@@ -174,6 +174,7 @@ def main():
 
     train_dataset = Dataset(args.data_type, args.train_data, symbol_table,
                             train_conf, args.bpe_model, non_lang_syms, True)
+
     cv_dataset = Dataset(args.data_type,
                          args.cv_data,
                          symbol_table,
@@ -187,11 +188,15 @@ def main():
                                    pin_memory=args.pin_memory,
                                    num_workers=args.num_workers,
                                    prefetch_factor=args.prefetch)
+    logging.info('train dataset loaded')
+
     cv_data_loader = DataLoader(cv_dataset,
                                 batch_size=None,
                                 pin_memory=args.pin_memory,
                                 num_workers=args.num_workers,
                                 prefetch_factor=args.prefetch)
+    logging.info('validation dataset loaded')
+
 
     if 'fbank_conf' in configs['dataset_conf']:
         input_dim = configs['dataset_conf']['fbank_conf']['num_mel_bins']

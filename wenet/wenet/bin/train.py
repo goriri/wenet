@@ -19,6 +19,25 @@ import copy
 import logging
 import os
 
+import subprocess
+import sys
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'Pillow'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pyyaml'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'sentencepiece'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'tensorboard'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'tensorboardX'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'typeguard'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'textgrid'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pytest'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'flake8'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'flake8-bugbear'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'flake8-comprehensions'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'flake8-executable'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'flake8-pyi'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'mccabe'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pycodestyle'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pyflakes'])
+
 import torch
 import torch.distributed as dist
 import torch.optim as optim

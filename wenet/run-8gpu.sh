@@ -1,6 +1,9 @@
 #!/bin/bash
-pip install torchaudio==0.10.0
-echo "torchaudio installed"
+pip install -r requirements.txt
+# pip install torchaudio==0.10.0
+# echo "torchaudio installed"
+# conda install pytorch=1.10.0 torchvision torchaudio=0.10.0 cudatoolkit=11.1 -c pytorch -c conda-forge
+
 # Copyright 2019 Mobvoi Inc. All Rights Reserved.
 
 . ./path.sh || exit 1;
@@ -130,15 +133,16 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   echo "$0: init method is $init_method"
   num_gpus=$(echo $CUDA_VISIBLE_DEVICES | awk -F "," '{print NF}')
   # Use "nccl" if it works, otherwise use "gloo"
-  dist_backend="gloo"
+  dist_backend="nccl"
   cmvn_opts=
   $cmvn && cmvn_opts="--cmvn $wave_data/${train_set}/global_cmvn"
   # train.py will write $train_config to $dir/train.yaml with model input
   # and output dimension, train.yaml will be used for inference or model
   # export later
   for ((i = 0; i < $num_gpus; ++i)); do
-  {
     gpu_id=$(echo $CUDA_VISIBLE_DEVICES | cut -d',' -f$[$i+1])
+    echo "Starting GPU Id: $i"
+  {
     python wenet/bin/train.py --gpu $gpu_id \
       --config $train_config \
       --data_type raw \

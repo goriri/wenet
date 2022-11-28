@@ -1,6 +1,9 @@
 #!/bin/bash
-pip install torchaudio==0.10.0
-echo "torchaudio installed"
+pip install -r requirements.txt
+# pip install torchaudio==0.10.0
+# echo "torchaudio installed"
+# conda install pytorch=1.10.0 torchvision torchaudio=0.10.0 cudatoolkit=11.1 -c pytorch -c conda-forge
+
 # Copyright 2019 Mobvoi Inc. All Rights Reserved.
 
 . ./path.sh || exit 1;

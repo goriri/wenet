@@ -1,7 +1,4 @@
 #!/bin/bash
-if [ ${stop_stage} -ge 4 ]; then
-  pip install -r requirements.txt
-fi
 # pip install torchaudio==0.10.0
 # echo "torchaudio installed"
 # conda install pytorch=1.10.0 torchvision torchaudio=0.10.0 cudatoolkit=11.1 -c pytorch -c conda-forge
@@ -51,6 +48,10 @@ set -o pipefail
 train_set=train_960
 dev_set=dev
 recog_set="test_clean test_other dev_clean dev_other"
+
+if [ ${stop_stage} -ge 4 ]; then
+  pip install -r requirements.txt
+fi
 
 if [ ${stage} -le -1 ] && [ ${stop_stage} -ge -1 ]; then
   echo "stage -1: Data Download"

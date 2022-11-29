@@ -1,7 +1,4 @@
 #!/bin/bash
-if [ ${stop_stage} -ge 4 ]; then
-  pip install -r requirements.txt
-fi
 
 # Copyright 2019 Mobvoi Inc. All Rights Reserved.
 
@@ -48,6 +45,10 @@ set -o pipefail
 train_set=train_960
 dev_set=dev
 recog_set="test_clean test_other dev_clean dev_other"
+
+if [ ${stop_stage} -ge 4 ]; then
+  pip install -r requirements.txt
+fi
 
 if [ ${stage} -le -1 ] && [ ${stop_stage} -ge -1 ]; then
   echo "stage -1: Data Download"

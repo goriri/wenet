@@ -1,2 +1,3 @@
 /data/
 .ipynb_checkpoints/
+wenet/data/train_960/

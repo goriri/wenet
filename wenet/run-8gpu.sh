@@ -175,11 +175,11 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
   # TODO, Add model average here
   mkdir -p $dir/test
   if [ ${average_checkpoint} == true ]; then
-    decode_checkpoint=$dir/avg_${average_num}.pt
+    decode_checkpoint=$checkpoint_dir/avg_${average_num}.pt
     echo "do model average and final checkpoint is $decode_checkpoint"
     python wenet/bin/average_model.py \
       --dst_model $decode_checkpoint \
-      --src_path $dir  \
+      --src_path $output_dir  \
       --num ${average_num} \
       --val_best
   fi
@@ -199,7 +199,7 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
         gpu_id=$(echo $CUDA_VISIBLE_DEVICES | cut -d',' -f$[$idx+1])
         python wenet/bin/recognize.py --gpu $gpu_id \
           --mode $mode \
-          --config $dir/train.yaml \
+          --config $output_dir/train.yaml \
           --data_type raw \
           --dict $dict \
           --bpe_model ${bpemodel}.model \
@@ -236,10 +236,11 @@ fi
 if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
   # Export the best model you want
   python wenet/bin/export_jit.py \
-    --config $dir/train.yaml \
-    --checkpoint $dir/avg_${average_num}.pt \
-    --output_file $dir/final.zip
+    --config $output_dir/train.yaml \
+    --checkpoint $checkpoint_dir/avg_${average_num}.pt \
+    --output_file $model_dir/final.zip
 fi
+
 
 # Optionally, you can add LM and test it with runtime.
 if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then

@@ -16,6 +16,7 @@
 import os
 import argparse
 import glob
+import logging
 
 import yaml
 import numpy as np
@@ -63,6 +64,8 @@ def main():
                 if epoch >= args.min_epoch and epoch <= args.max_epoch:
                     val_scores += [[epoch, loss]]
         val_scores = np.array(val_scores)
+        logging.info('val_scores {}'.format(val_scores))
+
         sort_idx = np.argsort(val_scores[:, -1])
         sorted_val_scores = val_scores[sort_idx][::1]
         print("best val scores = " + str(sorted_val_scores[:args.num, 1]))

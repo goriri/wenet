@@ -27,9 +27,11 @@ do_delta=false
 
 dir=exp/sp_spec_aug
 model_dir=model
+output_dir=output
+checkpoint_dir=checkpoint
 
 # use average_checkpoint will get better result
-average_checkpoint=true
+average_checkpoint=false
 decode_checkpoint=$dir/final.pt
 # maybe you can try to adjust it if you can not get close results as README.md
 average_num=10
@@ -154,6 +156,8 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
       --cv_data $wave_data/$dev_set/data.list \
       ${checkpoint:+--checkpoint $checkpoint} \
       --model_dir $model_dir \
+      --checkpoint_dir $checkpoint_dir\
+      --output_dir $output_dir\
       --ddp.init_method $init_method \
       --ddp.world_size $num_gpus \
       --ddp.rank $i \

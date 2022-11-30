@@ -68,6 +68,9 @@ def get_args():
                         default=-1,
                         help='gpu id for this local rank, -1 for cpu')
     parser.add_argument('--model_dir', required=True, help='save model dir')
+    parser.add_argument('--checkpoint_dir', required=True, help='save checkpoint dir')
+    parser.add_argument('--output_dir', required=True, help='save output dir')
+
     parser.add_argument('--checkpoint', help='checkpoint model')
     parser.add_argument('--tensorboard_dir',
                         default='tensorboard',
@@ -210,7 +213,7 @@ def main():
     configs['cmvn_file'] = args.cmvn
     configs['is_json_cmvn'] = True
     if args.rank == 0:
-        saved_config_path = os.path.join(args.model_dir, 'train.yaml')
+        saved_config_path = os.path.join(args.output_dir, 'train.yaml')
         with open(saved_config_path, 'w') as fout:
             data = yaml.dump(configs)
             fout.write(data)
@@ -226,7 +229,7 @@ def main():
     # the code to satisfy the script export requirements
     if args.rank == 0:
         script_model = torch.jit.script(model)
-        script_model.save(os.path.join(args.model_dir, 'init.zip'))
+        script_model.save(os.path.join(args.checkpoint_dir, 'init.zip'))
     executor = Executor()
     # If specify checkpoint, load some info from checkpoint
     if args.checkpoint is not None:
@@ -242,10 +245,13 @@ def main():
 
     num_epochs = configs.get('max_epoch', 100)
     model_dir = args.model_dir
+    output_dir = args.output_dir
+    checkpoint_dir = args.checkpoint_dir
+
     writer = None
     if args.rank == 0:
-        os.makedirs(model_dir, exist_ok=True)
-        exp_id = os.path.basename(model_dir)
+        os.makedirs(output_dir, exist_ok=True)
+        exp_id = os.path.basename(output_dir)
         writer = SummaryWriter(os.path.join(args.tensorboard_dir, exp_id))
 
     if distributed:
@@ -285,7 +291,7 @@ def main():
     configs['is_distributed'] = distributed
     configs['use_amp'] = args.use_amp
     if start_epoch == 0 and args.rank == 0:
-        save_model_path = os.path.join(model_dir, 'init.pt')
+        save_model_path = os.path.join(checkpoint_dir, 'init.pt')
         save_checkpoint(model, save_model_path)
 
     # Start training loop
@@ -309,7 +315,7 @@ def main():
 
         logging.info('Epoch {} CV info cv_loss {}'.format(epoch, cv_loss))
         if args.rank == 0:
-            save_model_path = os.path.join(model_dir, '{}.pt'.format(epoch))
+            save_model_path = os.path.join(checkpoint_dir, '{}.pt'.format(epoch))
             save_checkpoint(
                 model, save_model_path, {
                     'epoch': epoch,

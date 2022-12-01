@@ -29,9 +29,9 @@ checkpoint_dir=checkpoint
 
 # use average_checkpoint will get better result
 average_checkpoint=true
-decode_checkpoint=$dir/final.pt
+decode_checkpoint=$model_dir/final.pt
 # maybe you can try to adjust it if you can not get close results as README.md
-average_num=10
+average_num=1
 decode_modes="attention_rescoring ctc_greedy_search ctc_prefix_beam_search attention"
 
 . tools/parse_options.sh || exit 1;
@@ -44,9 +44,9 @@ set -e
 set -u
 set -o pipefail
 
-train_set=train_960
-dev_set=dev
-recog_set="test_clean test_other dev_clean dev_other"
+train_set=train_clean_100
+dev_set=dev_clean
+recog_set="test_clean"
 
 if [ ${stop_stage} -ge 4 ]; then
   pip install -r requirements.txt

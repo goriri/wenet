@@ -34,7 +34,7 @@ checkpoint_dir=checkpoint
 average_checkpoint=false
 decode_checkpoint=$model_dir/final.pt
 # maybe you can try to adjust it if you can not get close results as README.md
-average_num=10
+average_num=1
 decode_modes="attention_rescoring ctc_greedy_search ctc_prefix_beam_search attention"
 
 . tools/parse_options.sh || exit 1;

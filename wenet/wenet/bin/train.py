@@ -21,6 +21,8 @@ import os
 
 import subprocess
 import sys
+
+import torch
 import torch.distributed as dist
 import torch.optim as optim
 import yaml
@@ -202,7 +204,7 @@ def main():
 
     # Init asr model from configs
     model = init_model(configs)
-    print(model)
+    # print(model)
     num_params = sum(p.numel() for p in model.parameters())
     print('the number of model params: {:,d}'.format(num_params))
 
@@ -232,9 +234,9 @@ def main():
 
     writer = None
     if args.rank == 0:
-        os.makedirs(output_dir, exist_ok=True)
-        exp_id = os.path.basename(output_dir)
-        writer = SummaryWriter(os.path.join(args.tensorboard_dir, exp_id))
+        # os.makedirs(output_dir, exist_ok=True)
+        # exp_id = os.path.basename(output_dir)
+        writer = SummaryWriter(args.output_dir)
 
     if distributed:
         assert (torch.cuda.is_available())
@@ -312,7 +314,14 @@ def main():
     if final_epoch is not None and args.rank == 0:
         final_model_path = os.path.join(model_dir, 'final.pt')
         os.remove(final_model_path) if os.path.exists(final_model_path) else None
-        os.symlink('{}.pt'.format(final_epoch), final_model_path)
+        # os.symlink('{}.pt'.format(final_epoch), final_model_path)
+        save_checkpoint(
+                model, final_model_path, {
+                    'epoch': epoch,
+                    'lr': lr,
+                    'cv_loss': cv_loss,
+                    'step': executor.step
+                })
         writer.close()
 
 

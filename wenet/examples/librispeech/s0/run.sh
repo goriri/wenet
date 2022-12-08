@@ -7,12 +7,12 @@
 # Use this to control how many gpu you use, It's 1-gpu training if you specify
 # just 1gpu, otherwise it's is multiple gpu training based on DDP in pytorch
 export CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7"
-stage=$stage # start from 0 if you need to start from data preparation
-stop_stage=$stop_stage
+stage=4 # start from 0 if you need to start from data preparation
+stop_stage=5
 # data
 data_url=www.openslr.org/resources/12
 # use your own data path
-datadir=$DATA_DIR
+datadir=data_dir
 # wav data dir
 wave_data=data
 # Optional train_config
@@ -23,12 +23,15 @@ cmvn=true
 do_delta=false
 
 dir=exp/sp_spec_aug
+model_dir=model
+output_dir=output
+checkpoint_dir=checkpoint
 
 # use average_checkpoint will get better result
 average_checkpoint=true
-decode_checkpoint=$dir/final.pt
+decode_checkpoint=$model_dir/final.pt
 # maybe you can try to adjust it if you can not get close results as README.md
-average_num=10
+average_num=1
 decode_modes="attention_rescoring ctc_greedy_search ctc_prefix_beam_search attention"
 
 . tools/parse_options.sh || exit 1;
@@ -42,8 +45,12 @@ set -u
 set -o pipefail
 
 train_set=train_clean_100
-dev_set=dev
+dev_set=dev_clean
 recog_set="test_clean"
+
+if [ ${stop_stage} -ge 4 ]; then
+  pip install -r requirements.txt
+fi
 
 if [ ${stage} -le -1 ] && [ ${stop_stage} -ge -1 ]; then
   echo "stage -1: Data Download"
@@ -128,15 +135,16 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   echo "$0: init method is $init_method"
   num_gpus=$(echo $CUDA_VISIBLE_DEVICES | awk -F "," '{print NF}')
   # Use "nccl" if it works, otherwise use "gloo"
-  dist_backend="gloo"
+  dist_backend="nccl"
   cmvn_opts=
   $cmvn && cmvn_opts="--cmvn $wave_data/${train_set}/global_cmvn"
   # train.py will write $train_config to $dir/train.yaml with model input
   # and output dimension, train.yaml will be used for inference or model
   # export later
   for ((i = 0; i < $num_gpus; ++i)); do
-  {
     gpu_id=$(echo $CUDA_VISIBLE_DEVICES | cut -d',' -f$[$i+1])
+    echo "Starting GPU Id: $i"
+  {
     python wenet/bin/train.py --gpu $gpu_id \
       --config $train_config \
       --data_type raw \
@@ -145,7 +153,9 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
       --train_data $wave_data/$train_set/data.list \
       --cv_data $wave_data/$dev_set/data.list \
       ${checkpoint:+--checkpoint $checkpoint} \
-      --model_dir $dir \
+      --model_dir $model_dir \
+      --checkpoint_dir $checkpoint_dir\
+      --output_dir $output_dir\
       --ddp.init_method $init_method \
       --ddp.world_size $num_gpus \
       --ddp.rank $i \
@@ -165,11 +175,11 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
   # TODO, Add model average here
   mkdir -p $dir/test
   if [ ${average_checkpoint} == true ]; then
-    decode_checkpoint=$dir/avg_${average_num}.pt
+    decode_checkpoint=$checkpoint_dir/avg_${average_num}.pt
     echo "do model average and final checkpoint is $decode_checkpoint"
     python wenet/bin/average_model.py \
       --dst_model $decode_checkpoint \
-      --src_path $dir  \
+      --src_path $output_dir  \
       --num ${average_num} \
       --val_best
   fi
@@ -189,7 +199,7 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
         gpu_id=$(echo $CUDA_VISIBLE_DEVICES | cut -d',' -f$[$idx+1])
         python wenet/bin/recognize.py --gpu $gpu_id \
           --mode $mode \
-          --config $dir/train.yaml \
+          --config $output_dir/train.yaml \
           --data_type raw \
           --dict $dict \
           --bpe_model ${bpemodel}.model \
@@ -226,10 +236,11 @@ fi
 if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
   # Export the best model you want
   python wenet/bin/export_jit.py \
-    --config $dir/train.yaml \
-    --checkpoint $dir/avg_${average_num}.pt \
-    --output_file $dir/final.zip
+    --config $output_dir/train.yaml \
+    --checkpoint $checkpoint_dir/avg_${average_num}.pt \
+    --output_file $model_dir/final.zip
 fi
+
 
 # Optionally, you can add LM and test it with runtime.
 if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
